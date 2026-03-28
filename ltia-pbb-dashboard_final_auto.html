@@ -484,13 +484,19 @@ function loadFromCSV(file){
 
 async function loadFromSheets() {
   const url  = 'https://script.google.com/macros/s/AKfycbxnbSnHxmxIupytVjShvzFmJpSgJWWNKVvFs6Ty2k_2iNaCmXS3-rkyYXyjuOhR8zs4/exec';
-  const res  = await fetch(url);
-  const rows = await res.json();
-  processCSV(rows);
-  renderDashboard();
-  if (window.__setUpdateDate) window.__setUpdateDate();
-  const el = document.getElementById('uploadStatus');
-  if (el) el.textContent = "✅ Đã tải " + TOTAL_COUNT + " units từ Google Sheets";
+  try {
+    const res  = await fetch(url);
+    const rows = await res.json();
+    processCSV(rows);
+    renderDashboard();
+    if (window.__setUpdateDate) window.__setUpdateDate();
+    const el = document.getElementById('uploadStatus');
+    if (el) el.textContent = "✅ Đã tải " + TOTAL_COUNT + " units từ Google Sheets";
+  } catch (err) {
+    console.error('loadFromSheets error', err);
+    const el = document.getElementById('uploadStatus');
+    if (el) el.textContent = "⚠️ Lỗi tải dữ liệu từ Google Sheets";
+  }
 }
 
 // ─── THEME TOGGLE ────────────────────────────────────────────────────────────
