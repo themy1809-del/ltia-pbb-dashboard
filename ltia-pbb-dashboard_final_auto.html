@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LTIA-PBB Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#21262d;
+  --surface3:#30363d;
+  --border:#30363d;
+  --text:#e6edf3;
+  --text-muted:#8b949e;
+  --text-faint:#484f58;
+  --accent:#00b4d8;
+  --accent2:#3fb950;
+  --accent3:#f0883e;
+  --accent4:#ff7b72;
+  --accent5:#d2a8ff;
+  --font-body:'Inter',sans-serif;
+  --font-display:'Barlow Condensed',sans-serif;
+  --r:6px;
+}
+[data-theme="light"]{
+  --bg:#f0f4f8;
+  --surface:#ffffff;
+  --surface2:#f6f8fa;
+  --surface3:#eaeef2;
+  --border:#d0d7de;
+  --text:#1f2328;
+  --text-muted:#636c76;
+  --text-faint:#adb5bd;
+  --accent:#0969da;
+  --accent2:#1a7f37;
+  --accent3:#953800;
+  --accent4:#cf222e;
+  --accent5:#8250df;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text);
+  font-size:13px;
+  line-height:1.5;
+  min-height:100vh;
+}
+
+/* HEADER */
+.header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:10px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:100;
+  gap:16px;
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{
+  font-family:var(--font-display);
+  font-size:22px;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:1px;
+}
+.project-badge{
+  background:var(--surface3);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:3px 10px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--text-muted);
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.header-right{display:flex;align-items:center;gap:8px}
+.theme-btn{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:5px 9px;
+  cursor:pointer;
+  color:var(--text-muted);
+  font-size:14px;
+  transition:all .18s;
+}
+.theme-btn:hover{background:var(--surface3);color:var(--text)}
+.date-badge{
+  font-size:11px;
+  color:var(--text-muted);
+  padding:4px 8px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:4px;
+}
+
+/* MAIN LAYOUT */
+.main{padding:16px 20px;max-width:1600px;margin:0 auto}
+.section-title{
+  font-family:var(--font-display);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:10px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+
+/* KPI CARDS */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+.kpi-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:14px 16px;
+  position:relative;
+  overflow:hidden;
+}
+.kpi-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:var(--kpi-color,var(--accent));
+}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.kpi-value{font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1;color:var(--kpi-color,var(--text));margin-bottom:4px;font-variant-numeric:tabular-nums}
+.kpi-sub{font-size:11px;color:var(--text-muted)}
+
+/* CHART SECTIONS */
+.chart-grid{
+  display:grid;
+  gap:12px;
+  margin-bottom:16px;
+}
+.chart-grid-2{grid-template-columns:1fr 1fr}
+.chart-grid-3{grid-template-columns:1fr 1fr 1fr}
+.chart-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:14px;
+}
+.chart-card-title{
+  font-family:var(--font-display);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin-bottom:10px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:6px;
+}
+.chart-wrap{position:relative;width:100%;}
+.chart-wrap canvas{width:100%!important}
+
+/* LEGEND */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted)}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin-bottom:16px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+thead tr{
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+}
+th{
+  padding:8px 10px;
+  text-align:left;
+  font-weight:600;
+  font-size:10px;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+td{
+  padding:6px 10px;
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+  white-space:nowrap;
+}
+tr:hover td{background:var(--surface2)}
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:10px;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.3px;
+}
+.badge-complete{background:#1a4a1e;color:#3fb950;border:1px solid #2d6b35}
+.badge-ongoing{background:#3d2400;color:#f0883e;border:1px solid #7d4a00}
+[data-theme="light"] .badge-complete{background:#dafbe1;color:#1a7f37;border:1px solid #aef3b9}
+[data-theme="light"] .badge-ongoing{background:#fff3e0;color:#953800;border:1px solid #f7c77d}
+
+/* Progress bar cell */
+.pbar-wrap{display:flex;align-items:center;gap:6px;min-width:80px}
+.pbar{flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;min-width:50px}
+.pbar-fill{height:100%;border-radius:3px;transition:width .4s}
+.pbar-pct{font-size:10px;font-variant-numeric:tabular-nums;color:var(--text-muted);min-width:28px;text-align:right}
+
+/* Filter row */
+.filter-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+}
+.filter-btn{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:4px 12px;
+  font-size:11px;
+  cursor:pointer;
+  color:var(--text-muted);
+  transition:all .15s;
+  font-family:var(--font-body);
+}
+.filter-btn:hover,.filter-btn.active{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+.search-input{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:4px 10px;
+  font-size:11px;
+  color:var(--text);
+  font-family:var(--font-body);
+  outline:none;
+  min-width:160px;
+}
+.search-input:focus{border-color:var(--accent)}
+
+/* Progress overview section: big bar chart */
+.overview-chart-wrap{height:200px}
+
+/* Responsive */
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .chart-grid-2,.chart-grid-3{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+
+<script>
+(function(){
+  function formatToday(){
+    const d = new Date();
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+  const el = document.getElementById('updateDate');
+  if(el) el.textContent = formatToday();
+  window.__setUpdateDate = function(){
+    const el2 = document.getElementById('updateDate');
+    if(el2) el2.textContent = formatToday();
+  };
+})();
+</script>
+</head>
+<body>
+
+<div id="uploadBanner" style="background:var(--surface);border-bottom:2px solid var(--accent);padding:8px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <span style="color:var(--text-muted);font-weight:600;font-size:13px;">📂 CẬP NHẬT DỮ LIỆU:</span>
+  <label style="background:var(--accent);color:#fff;padding:5px 16px;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;letter-spacing:.5px">
+    Chọn file CSV
+    <input type="file" accept=".csv" style="display:none" onchange="loadFromCSV(this.files[0])">
+  </label>
+  <span id="uploadStatus" style="color:var(--accent2);font-size:12px;font-weight:600;"></span>
+  <span style="color:var(--text-faint);font-size:11px;margin-left:auto;">📄 ltia_pbb_clean.csv &nbsp;|&nbsp; Cột: Stt,Unit,Model,Gate,Gate_Number,Workshop,Delivery_Date,Fabrication_%,CAB_Interior_%,Rotunda_Interior_%,Tunnel_Interior_%,Final_Assembly_%,Total_%,Status</span>
+</div>
+<header class="header">
+  <div class="header-left">
+    <div class="logo">LTIA-PBB</div>
+    <span class="project-badge">PROJECT · LTIA-PBB</span>
+  </div>
+  <div class="header-right">
+    <div class="date-badge" id="updateDate">27/03/2026</div>
+    <button class="theme-btn" data-theme-toggle aria-label="Switch theme">☀️</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- KPI CARDS -->
+  <div class="section-title">Tổng quan dự án</div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- CHART ROW 1: Overall Progress by Gate + Status Donut -->
+  <div class="section-title">% Hoàn thiện tất cả công đoạn - Gates</div>
+  <div class="chart-card" style="margin-bottom:12px">
+    <div class="chart-card-title">% TỔNG HOÀN THIỆN THEO GATE</div>
+    <div class="chart-wrap" style="height:180px"><canvas id="chartOverall"></canvas></div>
+  </div>
+
+  <!-- CHART ROW 2: 3 process charts -->
+  <div class="chart-grid chart-grid-3" style="margin-bottom:12px">
+    <div class="chart-card">
+      <div class="chart-card-title">% Gia công Tunnel</div>
+      <div class="chart-wrap" style="height:150px"><canvas id="chartTunnel"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">% Gia công CAB Interior</div>
+      <div class="chart-wrap" style="height:150px"><canvas id="chartCab"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">% Gia công Rotunda Interior</div>
+      <div class="chart-wrap" style="height:150px"><canvas id="chartRotunda"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHART ROW 3: Final Assembly + Status Donut -->
+  <div class="chart-grid chart-grid-2" style="margin-bottom:16px">
+    <div class="chart-card">
+      <div class="chart-card-title">% Final Assembly (Docking / Interior / Electric / T&C)</div>
+      <div class="chart-wrap" style="height:150px"><canvas id="chartFinal"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Tiến độ tổng thể</div>
+      <div style="display:flex;gap:16px;align-items:center;height:150px">
+        <div style="flex:0 0 150px;height:150px"><canvas id="chartDonut"></canvas></div>
+        <div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px">Hoàn thành</div>
+            <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--accent2)" id="completeCount"></div>
+            <div style="font-size:10px;color:var(--text-muted)">Units Complete</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:2px">Đang sản xuất</div>
+            <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--accent3)" id="ongoingCount"></div>
+            <div style="font-size:10px;color:var(--text-muted)">Units Ongoing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-title">Tiến độ chi tiết từng Unit</div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="filterTable('all',this)">Tất cả</button>
+    <button class="filter-btn" onclick="filterTable('Complete',this)">✅ Complete</button>
+    <button class="filter-btn" onclick="filterTable('Ongoing',this)">🔄 Ongoing</button>
+    <input type="text" class="search-input" placeholder="Tìm Gate, Unit, Model..." oninput="searchTable(this.value)" id="searchInput">
+    <span style="font-size:11px;color:var(--text-muted);margin-left:auto" id="tableCount"></span>
+  </div>
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Unit</th>
+          <th>Model</th>
+          <th>Gate</th>
+          <th>Workshop</th>
+          <th>Delivery</th>
+          <th>Fabrication</th>
+          <th>CAB Interior</th>
+          <th>Rotunda Interior</th>
+          <th>Tunnel Interior</th>
+          <th>Final Assembly</th>
+          <th>Total %</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ─── DATA (dynamic from ltia_pbb_clean.csv) ───────────────────────────────
+let GATES = [], UNITS = [], COMPLETE_COUNT = 0, ONGOING_COUNT = 0, TOTAL_COUNT = 0;
+
+function parsePct(s){
+  s = String(s||'').replace('%','').trim();
+  return (isNaN(s)||s==='') ? 0 : parseInt(parseFloat(s));
+}
+// CSV columns (0-indexed):
+// 0:Stt 1:Unit 2:Model 3:Gate 4:Gate_Number 5:Workshop 6:Delivery_Date
+// 7:Fabrication_% 8:CAB_Interior_% 9:Rotunda_Interior_% 10:Tunnel_Interior_%
+// 11:Final_Assembly_% 12:Total_% 13:Status
+function processCSV(rows){
+  const units=[];
+  for(let i=1;i<rows.length;i++){
+    const c=rows[i];
+    if(!c[0]||isNaN(parseInt(c[0])))continue;
+    if(c.length<14)continue;
+    const statusRaw=(c[13]||'').trim().toLowerCase();
+    const status=statusRaw==='complete'?'Complete':'Ongoing';
+    const gateStr=(c[3]||'').trim();
+    const gateNum=parseInt(c[4])||0;
+    units.push({
+      stt:parseInt(c[0]), unit:(c[1]||'').trim(), model:(c[2]||'').trim(),
+      gate:gateStr, workshop:(c[5]||'').trim(), delivery:(c[6]||'').trim(),
+      fab:parsePct(c[7]), cab:parsePct(c[8]), rotunda:parsePct(c[9]),
+      tunnel:parsePct(c[10]), final:parsePct(c[11]), total:parsePct(c[12]),
+      status:status, gate_num:gateNum
+    });
+  }
+  UNITS=units;
+  TOTAL_COUNT=units.length;
+  COMPLETE_COUNT=units.filter(u=>u.status==='Complete').length;
+  ONGOING_COUNT=TOTAL_COUNT-COMPLETE_COUNT;
+  const gMap={};
+  units.forEach(u=>{
+    const k=u.gate_num||0;
+    if(!gMap[k]){
+      gMap[k]={gate:u.gate.replace(/#(\d+)L\d+/,'#$1'),gate_num:k,
+        fab:[],cab:[],rotunda:[],tunnel:[],final:[],total:[],status:'Complete',units:[]};
+    }
+    gMap[k].fab.push(u.fab); gMap[k].cab.push(u.cab);
+    gMap[k].rotunda.push(u.rotunda); gMap[k].tunnel.push(u.tunnel);
+    gMap[k].final.push(u.final); gMap[k].total.push(u.total);
+    gMap[k].units.push(u.unit);
+    if(u.status!=='Complete') gMap[k].status='Ongoing';
+  });
+  const avg=arr=>arr.length?Math.round(arr.reduce((a,b)=>a+b,0)/arr.length):0;
+  GATES=Object.values(gMap).sort((a,b)=>a.gate_num-b.gate_num).map(g=>({
+    gate:g.gate, gate_num:g.gate_num,
+    fab:avg(g.fab), cab:avg(g.cab), rotunda:avg(g.rotunda),
+    tunnel:avg(g.tunnel), final:avg(g.final), total:avg(g.total),
+    status:g.status, units:g.units
+  }));
+}
+function simpleParseCSV(text){
+  const rows=[]; const lines=text.split(/\r?\n/);
+  for(const line of lines){
+    if(!line.trim())continue;
+    const cols=[]; let cur=''; let inQ=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"') inQ=!inQ;
+      else if(ch===','&&!inQ){cols.push(cur);cur='';}
+      else cur+=ch;
+    }
+    cols.push(cur); rows.push(cols);
+  }
+  return rows;
+}
+function loadFromCSV(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    processCSV(simpleParseCSV(e.target.result));
+    renderDashboard();
+loadFromSheets();
+    if(window.__setUpdateDate) window.__setUpdateDate();
+    const el=document.getElementById('uploadStatus');
+    if(el) el.textContent='✅ Đã tải '+TOTAL_COUNT+' units từ '+file.name;
+  };
+  reader.readAsText(file,'utf-8');
+
+async function loadFromSheets() {
+  const url  = 'https://script.google.com/macros/s/AKfycbxnbSnHxmxIupytVjShvzFmJpSgJWWNKVvFs6Ty2k_2iNaCmXS3-rkyYXyjuOhR8zs4/exec';
+  const res  = await fetch(url);
+  const rows = await res.json();      // mảng 2D giống CSV
+  processCSV(rows);
+  renderDashboard();
+  if (window.__setUpdateDate) window.__setUpdateDate();
+  const el = document.getElementById('uploadStatus');
+  if (el) el.textContent = "✅ Đã tải " + TOTAL_COUNT + " units từ Google Sheets";
+}
+}
+
+// ─── THEME TOGGLE ────────────────────────────────────────────────────────────
+(function(){
+  const btn = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  let d = root.getAttribute('data-theme') || 'dark';
+  root.setAttribute('data-theme', d);
+  btn.innerHTML = d==='dark' ? '☀️' : '🌙';
+  btn.addEventListener('click', ()=>{
+    d = d==='dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', d);
+    btn.innerHTML = d==='dark' ? '☀️' : '🌙';
+    updateChartColors();
+  });
+})();
+
+// ─── COLORS ──────────────────────────────────────────────────────────────────
+function getCSSVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function chartDefaults(){
+  const textMuted = getCSSVar('--text-muted');
+  const border = getCSSVar('--border');
+  Chart.defaults.color = textMuted;
+  Chart.defaults.borderColor = border;
+  Chart.defaults.font.family = "'Inter',sans-serif";
+  Chart.defaults.font.size = 11;
+}
+
+// ─── CHART HELPERS ───────────────────────────────────────────────────────────
+let charts = {};
+
+function makeBarChart(id, labels, data, color, height){
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  const bg = data.map(v => v===100 ? (color+'CC') : (color+'55'));
+  const brd = data.map(v => v===100 ? color : (color+'88'));
+  charts[id] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data,
+        backgroundColor: bg,
+        borderColor: brd,
+        borderWidth:1,
+        borderRadius:3,
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:{duration:600},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label: ctx=>`${ctx.parsed.y}%`
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{maxRotation:45,minRotation:0,font:{size:9}},
+          grid:{display:false},
+        },
+        y:{
+          min:0,max:100,
+          ticks:{callback:v=>v+'%',stepSize:25,font:{size:9}},
+          grid:{color: getCSSVar('--border')},
+        }
+      }
+    }
+  });
+}
+
+function buildAllCharts(){
+  chartDefaults();
+  const labels = GATES.map(g=>g.gate);
+
+  makeBarChart('chartOverall', labels, GATES.map(g=>g.total), '#00b4d8', 180);
+  makeBarChart('chartTunnel',  labels, GATES.map(g=>g.tunnel), '#d2a8ff', 150);
+  makeBarChart('chartCab',     labels, GATES.map(g=>g.cab),    '#79c0ff', 150);
+  makeBarChart('chartRotunda', labels, GATES.map(g=>g.rotunda),'#56d364', 150);
+  makeBarChart('chartFinal',   labels, GATES.map(g=>g.final),  '#f0883e', 150);
+
+  // Donut
+  if(charts.donut) charts.donut.destroy();
+  const dCtx = document.getElementById('chartDonut').getContext('2d');
+  charts.donut = new Chart(dCtx, {
+    type:'doughnut',
+    data:{
+      labels:['Complete','Ongoing'],
+      datasets:[{
+        data:[COMPLETE_COUNT, ONGOING_COUNT],
+        backgroundColor:['#3fb950CC','#f0883eCC'],
+        borderColor:['#3fb950','#f0883e'],
+        borderWidth:2,
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      cutout:'65%',
+      animation:{duration:800},
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{boxWidth:10,font:{size:10},padding:8}
+        },
+        tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed} units`}}
+      }
+    }
+  });
+}
+
+function updateChartColors(){
+  buildAllCharts();
+}
+
+// ─── TABLE ───────────────────────────────────────────────────────────────────
+function pbar(pct, color){
+  return `<div class="pbar-wrap">
+    <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${color}"></div></div>
+    <span class="pbar-pct">${pct}%</span>
+  </div>`;
+}
+
+function renderRow(u){
+  const raw = (u.status || '').toLowerCase();
+  const s = raw === 'complete' ? 'Complete' : 'Ongoing';
+  const badge = s==='Complete'
+    ? '<span class="badge badge-complete">Complete</span>'
+    : '<span class="badge badge-ongoing">Ongoing</span>';
+  return `<tr data-status="${s.toLowerCase()}" data-search="${[u.unit,u.model,u.gate,u.workshop].join(' ').toLowerCase()}">
+    <td style="color:var(--text-muted)">${u.stt}</td>
+    <td style="font-weight:600">${u.unit}</td>
+    <td style="color:var(--text-muted)">${u.model}</td>
+    <td style="font-weight:600;color:var(--accent)">${u.gate}</td>
+    <td>${u.workshop}</td>
+    <td style="font-size:11px;color:var(--text-muted)">${u.delivery || '—'}</td>
+    <td>${pbar(u.fab,'#00b4d8')}</td>
+    <td>${pbar(u.cab,'#79c0ff')}</td>
+    <td>${pbar(u.rotunda,'#56d364')}</td>
+    <td>${pbar(u.tunnel,'#d2a8ff')}</td>
+    <td>${pbar(u.final,'#f0883e')}</td>
+    <td style="font-weight:700;color:${u.total===100?'var(--accent2)':u.total>0?'var(--accent)':'var(--text-muted)'};font-variant-numeric:tabular-nums">${u.total}%</td>
+    <td>${badge}</td>
+  </tr>`;
+}
+
+const tbody = document.getElementById('tableBody');
+tbody.innerHTML = UNITS.map(renderRow).join('');
+
+function updateCount(){
+  const visible = tbody.querySelectorAll('tr:not([style*="none"])').length;
+  document.getElementById('tableCount').textContent = `Hiển thị ${visible} / ${TOTAL_COUNT} units`;
+}
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function filterTable(type, btn){
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  applyFilters();
+}
+
+function searchTable(val){
+  currentSearch = val.toLowerCase();
+  applyFilters();
+}
+
+function applyFilters(){
+  const rows = tbody.querySelectorAll('tr');
+  rows.forEach(r=>{
+    const statusMatch = currentFilter==='all' || r.dataset.status===currentFilter.toLowerCase();
+    const searchMatch = !currentSearch || r.dataset.search.includes(currentSearch);
+    r.style.display = (statusMatch && searchMatch) ? '' : 'none';
+  });
+  updateCount();
+}
+
+updateCount();
+
+
+// ─── RENDER DASHBOARD ─────────────────────────────────────────────────────
+function renderDashboard(){
+  const TOTAL=TOTAL_COUNT, COMPLETE=COMPLETE_COUNT, ONGOING=ONGOING_COUNT;
+  const avgPct=TOTAL?(UNITS.reduce((a,u)=>a+u.total,0)/TOTAL).toFixed(1):'0.0';
+  const kpiData=[
+    {label:'TOTAL UNITS',value:TOTAL,sub:'All ESC units',color:'var(--accent)'},
+    {label:'COMPLETE',value:COMPLETE,sub:(TOTAL?Math.round(COMPLETE/TOTAL*100):0)+'% of total',color:'var(--accent2)'},
+    {label:'ONGOING',value:ONGOING,sub:'In production',color:'var(--accent3)'},
+    {label:'FABRICATION',value:'100%',sub:'All gates 100%',color:'var(--accent5)'},
+    {label:'AVG PROGRESS',value:avgPct+'%',sub:'All processes avg',color:'var(--accent)'},
+  ];
+  document.getElementById('kpiGrid').innerHTML=kpiData.map(k=>`
+  <div class="kpi-card" style="--kpi-color:${k.color}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+  </div>`).join('');
+  document.getElementById('completeCount').textContent=COMPLETE;
+  document.getElementById('ongoingCount').textContent=ONGOING;
+  document.getElementById('tableBody').innerHTML=UNITS.map(renderRow).join('');
+  currentFilter='all'; currentSearch='';
+  updateCount();
+  buildAllCharts();
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderDashboard();
+
+</script>
+</body>
+</html>
