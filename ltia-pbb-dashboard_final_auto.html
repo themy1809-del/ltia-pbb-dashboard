@@ -306,6 +306,7 @@ tr:hover td{background:var(--surface2)}
   <span id="uploadStatus" style="color:var(--accent2);font-size:12px;font-weight:600;"></span>
   <span style="color:var(--text-faint);font-size:11px;margin-left:auto;">📄 ltia_pbb_clean.csv &nbsp;|&nbsp; Cột: Stt,Unit,Model,Gate,Gate_Number,Workshop,Delivery_Date,Fabrication_%,CAB_Interior_%,Rotunda_Interior_%,Tunnel_Interior_%,Final_Assembly_%,Total_%,Status</span>
 </div>
+
 <header class="header">
   <div class="header-left">
     <div class="logo">LTIA-PBB</div>
@@ -318,19 +319,15 @@ tr:hover td{background:var(--surface2)}
 </header>
 
 <div class="main">
-
-  <!-- KPI CARDS -->
   <div class="section-title">Tổng quan dự án</div>
   <div class="kpi-grid" id="kpiGrid"></div>
 
-  <!-- CHART ROW 1: Overall Progress by Gate + Status Donut -->
   <div class="section-title">% Hoàn thiện tất cả công đoạn - Gates</div>
   <div class="chart-card" style="margin-bottom:12px">
     <div class="chart-card-title">% TỔNG HOÀN THIỆN THEO GATE</div>
     <div class="chart-wrap" style="height:180px"><canvas id="chartOverall"></canvas></div>
   </div>
 
-  <!-- CHART ROW 2: 3 process charts -->
   <div class="chart-grid chart-grid-3" style="margin-bottom:12px">
     <div class="chart-card">
       <div class="chart-card-title">% Gia công Tunnel</div>
@@ -346,7 +343,6 @@ tr:hover td{background:var(--surface2)}
     </div>
   </div>
 
-  <!-- CHART ROW 3: Final Assembly + Status Donut -->
   <div class="chart-grid chart-grid-2" style="margin-bottom:16px">
     <div class="chart-card">
       <div class="chart-card-title">% Final Assembly (Docking / Interior / Electric / T&C)</div>
@@ -372,7 +368,6 @@ tr:hover td{background:var(--surface2)}
     </div>
   </div>
 
-  <!-- TABLE -->
   <div class="section-title">Tiến độ chi tiết từng Unit</div>
   <div class="filter-row">
     <button class="filter-btn active" onclick="filterTable('all',this)">Tất cả</button>
@@ -403,21 +398,17 @@ tr:hover td{background:var(--surface2)}
       <tbody id="tableBody"></tbody>
     </table>
   </div>
-
 </div><!-- /main -->
 
 <script>
-// ─── DATA (dynamic from ltia_pbb_clean.csv) ───────────────────────────────
+// ─── DATA ───────────────────────────────────────────────────────────────────
 let GATES = [], UNITS = [], COMPLETE_COUNT = 0, ONGOING_COUNT = 0, TOTAL_COUNT = 0;
 
 function parsePct(s){
   s = String(s||'').replace('%','').trim();
   return (isNaN(s)||s==='') ? 0 : parseInt(parseFloat(s));
 }
-// CSV columns (0-indexed):
-// 0:Stt 1:Unit 2:Model 3:Gate 4:Gate_Number 5:Workshop 6:Delivery_Date
-// 7:Fabrication_% 8:CAB_Interior_% 9:Rotunda_Interior_% 10:Tunnel_Interior_%
-// 11:Final_Assembly_% 12:Total_% 13:Status
+
 function processCSV(rows){
   const units=[];
   for(let i=1;i<rows.length;i++){
@@ -440,6 +431,7 @@ function processCSV(rows){
   TOTAL_COUNT=units.length;
   COMPLETE_COUNT=units.filter(u=>u.status==='Complete').length;
   ONGOING_COUNT=TOTAL_COUNT-COMPLETE_COUNT;
+
   const gMap={};
   units.forEach(u=>{
     const k=u.gate_num||0;
@@ -461,6 +453,7 @@ function processCSV(rows){
     status:g.status, units:g.units
   }));
 }
+
 function simpleParseCSV(text){
   const rows=[]; const lines=text.split(/\r?\n/);
   for(const line of lines){
@@ -476,28 +469,28 @@ function simpleParseCSV(text){
   }
   return rows;
 }
+
 function loadFromCSV(file){
   const reader=new FileReader();
   reader.onload=function(e){
     processCSV(simpleParseCSV(e.target.result));
     renderDashboard();
-loadFromSheets();
     if(window.__setUpdateDate) window.__setUpdateDate();
     const el=document.getElementById('uploadStatus');
     if(el) el.textContent='✅ Đã tải '+TOTAL_COUNT+' units từ '+file.name;
   };
   reader.readAsText(file,'utf-8');
+}
 
 async function loadFromSheets() {
   const url  = 'https://script.google.com/macros/s/AKfycbxnbSnHxmxIupytVjShvzFmJpSgJWWNKVvFs6Ty2k_2iNaCmXS3-rkyYXyjuOhR8zs4/exec';
   const res  = await fetch(url);
-  const rows = await res.json();      // mảng 2D giống CSV
+  const rows = await res.json();
   processCSV(rows);
   renderDashboard();
   if (window.__setUpdateDate) window.__setUpdateDate();
   const el = document.getElementById('uploadStatus');
   if (el) el.textContent = "✅ Đã tải " + TOTAL_COUNT + " units từ Google Sheets";
-}
 }
 
 // ─── THEME TOGGLE ────────────────────────────────────────────────────────────
@@ -554,11 +547,7 @@ function makeBarChart(id, labels, data, color, height){
       animation:{duration:600},
       plugins:{
         legend:{display:false},
-        tooltip:{
-          callbacks:{
-            label: ctx=>`${ctx.parsed.y}%`
-          }
-        }
+        tooltip:{callbacks:{label: ctx=>`${ctx.parsed.y}%`}}
       },
       scales:{
         x:{
@@ -585,7 +574,6 @@ function buildAllCharts(){
   makeBarChart('chartRotunda', labels, GATES.map(g=>g.rotunda),'#56d364', 150);
   makeBarChart('chartFinal',   labels, GATES.map(g=>g.final),  '#f0883e', 150);
 
-  // Donut
   if(charts.donut) charts.donut.destroy();
   const dCtx = document.getElementById('chartDonut').getContext('2d');
   charts.donut = new Chart(dCtx, {
@@ -685,7 +673,6 @@ function applyFilters(){
 
 updateCount();
 
-
 // ─── RENDER DASHBOARD ─────────────────────────────────────────────────────
 function renderDashboard(){
   const TOTAL=TOTAL_COUNT, COMPLETE=COMPLETE_COUNT, ONGOING=ONGOING_COUNT;
@@ -713,7 +700,8 @@ function renderDashboard(){
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 renderDashboard();
-
+loadFromSheets();
 </script>
+
 </body>
 </html>
